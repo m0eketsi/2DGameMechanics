@@ -44,9 +44,9 @@ TagManager:
   - name: Background
     uniqueID: 2057617835
     locked: 0
-  - name: Player
+  - name: Room
     uniqueID: 1148999561
     locked: 0
-  - name: Room
+  - name: Player
     uniqueID: 3250339807
     locked: 0
