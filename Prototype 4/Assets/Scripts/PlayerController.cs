@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     public float Speed = 10;
     private Rigidbody2D _playerRb;
     public GameObject ExplosionFX;
+    public GameObject PowerupIndicator;
+    public bool HasPowerUp = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -31,5 +33,18 @@ public class PlayerController : MonoBehaviour
             gameObject.SetActive(false);
             SceneManager.LoadScene(0);
         }
+        if(other.gameObject.CompareTag("Powerup"))
+        {
+            Destroy(other.gameObject);
+            PowerupIndicator.gameObject.SetActive(true);
+            HasPowerUp = true;
+            StartCoroutine(PowerupCountdownRoutine());
+        }
+    }
+    IEnumerator PowerupCountdownRoutine()
+    {
+        yield return new WaitForSeconds(5);
+        PowerupIndicator.gameObject.SetActive(false);
+        HasPowerUp = false;
     }
 }
