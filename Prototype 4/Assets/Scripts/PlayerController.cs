@@ -2,19 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
 public class PlayerController : MonoBehaviour
 {
     public float Speed = 10;
-    private Rigidbody2D _playerRb;
+    public float PowerupStrength = 5;
     public GameObject ExplosionFX;
     public GameObject PowerupIndicator;
-    public bool HasPowerUp = false;
-    public float powerupPower = 10;
+    public bool HasPowerup = false;
+    private Rigidbody2D _playerRb;
+    private SpriteRenderer _playerSR;
+
     // Start is called before the first frame update
     void Start()
     {
         _playerRb = GetComponent<Rigidbody2D>();
+        _playerSR = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -23,42 +25,57 @@ public class PlayerController : MonoBehaviour
         float verticalInput = Input.GetAxis("Vertical");
         float horizontalInput = Input.GetAxis("Horizontal");
 
-        Vector2 direction = new Vector2(horizontalInput,verticalInput);
+        Vector2 direction = new Vector2(horizontalInput, verticalInput);
         _playerRb.AddForce(direction * Speed);
+
     }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if(other.gameObject.CompareTag("Wall"))
         {
-            Instantiate(ExplosionFX, transform.position, ExplosionFX.transform.rotation);
-            gameObject.SetActive(false);
-            SceneManager.LoadScene(0);
+            StartCoroutine(GameOverRoutine());
         }
+
         if(other.gameObject.CompareTag("Powerup"))
         {
             Destroy(other.gameObject);
             PowerupIndicator.gameObject.SetActive(true);
-            HasPowerUp = true;
+            HasPowerup = true;
             StartCoroutine(PowerupCountdownRoutine());
         }
     }
+
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if(other.gameObject.CompareTag("Enemy") && HasPowerUp)
+        if(other.gameObject.CompareTag("Enemy") && HasPowerup)
         {
             Rigidbody2D enemyRB = other.gameObject.GetComponent<Rigidbody2D>();
 
             Vector2 awayFromPlayer = (other.gameObject.transform.position - transform.position);
 
-            enemyRB.AddForce(awayFromPlayer * powerupPower, ForceMode2D.Impulse);
-            HasPowerUp = false;
-            PowerupIndicator.SetActive(false);
+            enemyRB.AddForce(awayFromPlayer * PowerupStrength, ForceMode2D.Impulse);
+
+            PowerupIndicator.gameObject.SetActive(false);
+            HasPowerup = false;
         }
     }
+
     IEnumerator PowerupCountdownRoutine()
     {
         yield return new WaitForSeconds(5);
         PowerupIndicator.gameObject.SetActive(false);
-        HasPowerUp = false;
+        HasPowerup = false;
+    }
+
+    IEnumerator GameOverRoutine()
+    {
+        Instantiate(ExplosionFX, transform.position, ExplosionFX.transform.rotation);
+       // gameObject.SetActive(false);
+        PowerupIndicator.gameObject.SetActive(false);
+        HasPowerup = false;
+        _playerSR.enabled = false;
+        yield return new WaitForSeconds(1.1f);
+        SceneManager.LoadScene(0);
     }
 }
